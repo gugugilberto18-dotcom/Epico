@@ -2,12 +2,12 @@ local player = game.Players.LocalPlayer
 local workspace = game:GetService("Workspace")
 local TweenService = game:GetService("TweenService")
 
--- evita duplicar GUI
+-- evitar duplicação
 if player:WaitForChild("PlayerGui"):FindFirstChild("EpicPainel") then
     return
 end
 
--- função UICorner
+-- função de borda arredondada
 local function aplicarCorner(obj, raio)
     local c = Instance.new("UICorner")
     c.CornerRadius = UDim.new(0, raio or 8)
@@ -17,10 +17,10 @@ end
 -- GUI
 local gui = Instance.new("ScreenGui")
 gui.Name = "EpicPainel"
-gui.ResetOnSpawn = false -- 👈 NÃO SOME AO MORRER
+gui.ResetOnSpawn = false
 gui.Parent = player.PlayerGui
 
--- BOTÃO ABRIR
+-- botão abrir
 local openBtn = Instance.new("TextButton")
 openBtn.Size = UDim2.new(0, 45, 0, 45)
 openBtn.Position = UDim2.new(0, 10, 0.5, -22)
@@ -32,7 +32,7 @@ openBtn.Visible = false
 openBtn.Parent = gui
 aplicarCorner(openBtn, 20)
 
--- FRAME
+-- frame principal
 local frame = Instance.new("Frame")
 frame.Size = UDim2.new(0, 260, 0, 160)
 frame.Position = UDim2.new(0.5, -130, 0.5, -80)
@@ -42,13 +42,13 @@ frame.Draggable = true
 frame.Parent = gui
 aplicarCorner(frame, 10)
 
--- BORDA
+-- borda
 local stroke = Instance.new("UIStroke")
 stroke.Color = Color3.fromRGB(0,170,255)
 stroke.Thickness = 2
 stroke.Parent = frame
 
--- TÍTULO
+-- título
 local title = Instance.new("TextLabel")
 title.Size = UDim2.new(1, 0, 0, 30)
 title.Text = "Epic Painel"
@@ -58,7 +58,7 @@ title.Font = Enum.Font.GothamBold
 title.Parent = frame
 aplicarCorner(title, 8)
 
--- BOTÃO X
+-- botão fechar
 local closeBtn = Instance.new("TextButton")
 closeBtn.Size = UDim2.new(0, 30, 0, 30)
 closeBtn.Position = UDim2.new(1, -30, 0, 0)
@@ -69,11 +69,11 @@ closeBtn.Font = Enum.Font.GothamBold
 closeBtn.Parent = frame
 aplicarCorner(closeBtn, 6)
 
--- BOTÃO HAND
+-- botão MORE DAMAGE
 local btnHand = Instance.new("TextButton")
 btnHand.Size = UDim2.new(0.8, 0, 0, 40)
 btnHand.Position = UDim2.new(0.1, 0, 0.3, 0)
-btnHand.Text = "Hand2: OFF"
+btnHand.Text = "MORE DAMAGE [OFF]"
 btnHand.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
 btnHand.BackgroundTransparency = 0.3
 btnHand.TextColor3 = Color3.new(1,1,1)
@@ -81,11 +81,11 @@ btnHand.Font = Enum.Font.GothamBold
 btnHand.Parent = frame
 aplicarCorner(btnHand, 8)
 
--- BOTÃO ARMOR
+-- botão MORE ARMOR
 local btnArmor = Instance.new("TextButton")
 btnArmor.Size = UDim2.new(0.8, 0, 0, 40)
 btnArmor.Position = UDim2.new(0.1, 0, 0.65, 0)
-btnArmor.Text = "Armor: OFF"
+btnArmor.Text = "MORE ARMOR [OFF]"
 btnArmor.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
 btnArmor.BackgroundTransparency = 0.3
 btnArmor.TextColor3 = Color3.new(1,1,1)
@@ -93,11 +93,11 @@ btnArmor.Font = Enum.Font.GothamBold
 btnArmor.Parent = frame
 aplicarCorner(btnArmor, 8)
 
--- ESTADOS
+-- estados
 local handAtivo = false
 local armorAtivo = false
 
--- FUNÇÕES
+-- funções
 local function limparHand2()
     local model = workspace:FindFirstChild(player.Name)
     if model then
@@ -118,7 +118,7 @@ local function setarArmor()
     end
 end
 
--- LOOP
+-- loop contínuo
 task.spawn(function()
     while true do
         task.wait(0.3)
@@ -127,18 +127,18 @@ task.spawn(function()
     end
 end)
 
--- TOGGLES
+-- toggles
 btnHand.MouseButton1Click:Connect(function()
     handAtivo = not handAtivo
-    btnHand.Text = "Hand2: " .. (handAtivo and "ON" or "OFF")
+    btnHand.Text = "MORE DAMAGE " .. (handAtivo and "[ON]" or "[OFF]")
 end)
 
 btnArmor.MouseButton1Click:Connect(function()
     armorAtivo = not armorAtivo
-    btnArmor.Text = "Armor: " .. (armorAtivo and "ON" or "OFF")
+    btnArmor.Text = "MORE ARMOR " .. (armorAtivo and "[ON]" or "[OFF]")
 end)
 
--- ANIMAÇÃO
+-- animações
 local function abrir()
     frame.Visible = true
     frame.Size = UDim2.new(0,0,0,0)
@@ -156,7 +156,7 @@ local function fechar()
     frame.Visible = false
 end
 
--- CONTROLES
+-- controles
 closeBtn.MouseButton1Click:Connect(function()
     fechar()
     openBtn.Visible = true
@@ -167,10 +167,9 @@ openBtn.MouseButton1Click:Connect(function()
     openBtn.Visible = false
 end)
 
--- 🔁 BACKUP: se o jogo apagar a GUI, recria
+-- recriar se apagar
 player.CharacterAdded:Connect(function()
     task.wait(1)
-
     if not player.PlayerGui:FindFirstChild("EpicPainel") then
         local clone = script:Clone()
         clone.Parent = player.PlayerGui
