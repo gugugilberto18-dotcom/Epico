@@ -2,7 +2,12 @@ local player = game.Players.LocalPlayer
 local workspace = game:GetService("Workspace")
 local TweenService = game:GetService("TweenService")
 
--- Função UICorner
+-- evita duplicar GUI
+if player:WaitForChild("PlayerGui"):FindFirstChild("EpicPainel") then
+    return
+end
+
+-- função UICorner
 local function aplicarCorner(obj, raio)
     local c = Instance.new("UICorner")
     c.CornerRadius = UDim.new(0, raio or 8)
@@ -12,7 +17,8 @@ end
 -- GUI
 local gui = Instance.new("ScreenGui")
 gui.Name = "EpicPainel"
-gui.Parent = player:WaitForChild("PlayerGui")
+gui.ResetOnSpawn = false -- 👈 NÃO SOME AO MORRER
+gui.Parent = player.PlayerGui
 
 -- BOTÃO ABRIR
 local openBtn = Instance.new("TextButton")
@@ -22,8 +28,8 @@ openBtn.Text = "+"
 openBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
 openBtn.TextColor3 = Color3.new(1,1,1)
 openBtn.Font = Enum.Font.GothamBold
-openBtn.Parent = gui
 openBtn.Visible = false
+openBtn.Parent = gui
 aplicarCorner(openBtn, 20)
 
 -- FRAME
@@ -63,7 +69,7 @@ closeBtn.Font = Enum.Font.GothamBold
 closeBtn.Parent = frame
 aplicarCorner(closeBtn, 6)
 
--- BOTÃO HAND (vermelho transparente)
+-- BOTÃO HAND
 local btnHand = Instance.new("TextButton")
 btnHand.Size = UDim2.new(0.8, 0, 0, 40)
 btnHand.Position = UDim2.new(0.1, 0, 0.3, 0)
@@ -75,7 +81,7 @@ btnHand.Font = Enum.Font.GothamBold
 btnHand.Parent = frame
 aplicarCorner(btnHand, 8)
 
--- BOTÃO ARMOR (azul transparente)
+-- BOTÃO ARMOR
 local btnArmor = Instance.new("TextButton")
 btnArmor.Size = UDim2.new(0.8, 0, 0, 40)
 btnArmor.Position = UDim2.new(0.1, 0, 0.65, 0)
@@ -159,4 +165,14 @@ end)
 openBtn.MouseButton1Click:Connect(function()
     abrir()
     openBtn.Visible = false
+end)
+
+-- 🔁 BACKUP: se o jogo apagar a GUI, recria
+player.CharacterAdded:Connect(function()
+    task.wait(1)
+
+    if not player.PlayerGui:FindFirstChild("EpicPainel") then
+        local clone = script:Clone()
+        clone.Parent = player.PlayerGui
+    end
 end)
