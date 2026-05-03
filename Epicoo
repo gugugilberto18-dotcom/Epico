@@ -1,189 +1,363 @@
-local player = game.Players.LocalPlayer
+local Players = game:GetService("Players")
+local player = Players.LocalPlayer
 local workspace = game:GetService("Workspace")
 local TweenService = game:GetService("TweenService")
+local UIS = game:GetService("UserInputService")
 
--- evitar duplicação
-if player:WaitForChild("PlayerGui"):FindFirstChild("EpicPainel") then
-    return
+local playerGui = player:WaitForChild("PlayerGui")
+
+if playerGui:FindFirstChild("EpicPainel") then
+	playerGui.EpicPainel:Destroy()
 end
 
--- função de borda arredondada
-local function aplicarCorner(obj, raio)
-    local c = Instance.new("UICorner")
-    c.CornerRadius = UDim.new(0, raio or 8)
-    c.Parent = obj
+-- UI corner
+local function corner(obj, r)
+	local c = Instance.new("UICorner")
+	c.CornerRadius = UDim.new(0, r or 10)
+	c.Parent = obj
 end
 
 -- GUI
 local gui = Instance.new("ScreenGui")
 gui.Name = "EpicPainel"
 gui.ResetOnSpawn = false
-gui.Parent = player.PlayerGui
+gui.Parent = playerGui
 
--- botão abrir
-local openBtn = Instance.new("TextButton")
-openBtn.Size = UDim2.new(0, 45, 0, 45)
-openBtn.Position = UDim2.new(0, 10, 0.35, -22)
-openBtn.Text = "+"
-openBtn.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
-openBtn.TextColor3 = Color3.new(1,1,1)
-openBtn.Font = Enum.Font.GothamBold
-openBtn.Visible = false
-openBtn.Parent = gui
-aplicarCorner(openBtn, 20)
-
--- frame principal
+-- FRAME
 local frame = Instance.new("Frame")
-frame.Size = UDim2.new(0, 260, 0, 160)
-frame.Position = UDim2.new(0.5, -130, 0.5, -80)
-frame.BackgroundColor3 = Color3.fromRGB(25, 25, 25)
-frame.Active = true
-frame.Draggable = true
+frame.Size = UDim2.new(0,300,0,260)
+frame.Position = UDim2.new(0.5,-150,0.5,-130)
+frame.BackgroundColor3 = Color3.fromRGB(20,20,20)
 frame.Parent = gui
-aplicarCorner(frame, 10)
+frame.Active = true
+corner(frame,12)
 
--- borda
-local stroke = Instance.new("UIStroke")
-stroke.Color = Color3.fromRGB(0,170,255)
-stroke.Thickness = 2
-stroke.Parent = frame
+-- TEXTO BY SONNA
+local by = Instance.new("TextLabel")
+by.Size = UDim2.new(0,120,0,20)
+by.Position = UDim2.new(0,10,1,-20)
+by.Text = "By Sonna"
+by.TextColor3 = Color3.fromRGB(150,150,150)
+by.BackgroundTransparency = 1
+by.Font = Enum.Font.Gotham
+by.TextSize = 12
+by.Parent = frame
 
--- título
+-- DRAG FRAME
+local dragging, startPos, startFramePos
+frame.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = true
+		startPos = input.Position
+		startFramePos = frame.Position
+	end
+end)
+
+UIS.InputChanged:Connect(function(input)
+	if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+		local delta = input.Position - startPos
+		frame.Position = UDim2.new(
+			startFramePos.X.Scale,
+			startFramePos.X.Offset + delta.X,
+			startFramePos.Y.Scale,
+			startFramePos.Y.Offset + delta.Y
+		)
+	end
+end)
+
+UIS.InputEnded:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging = false
+	end
+end)
+
+-- TOP
+local top = Instance.new("Frame")
+top.Size = UDim2.new(1,0,0,30)
+top.BackgroundColor3 = Color3.fromRGB(35,35,35)
+top.Parent = frame
+corner(top,10)
+
 local title = Instance.new("TextLabel")
-title.Size = UDim2.new(1, 0, 0, 30)
+title.Size = UDim2.new(1,0,1,0)
 title.Text = "Epic Painel"
-title.BackgroundColor3 = Color3.fromRGB(40, 40, 40)
+title.BackgroundTransparency = 1
 title.TextColor3 = Color3.new(1,1,1)
 title.Font = Enum.Font.GothamBold
-title.Parent = frame
-aplicarCorner(title, 8)
+title.TextScaled = true
+title.Parent = top
 
--- botão fechar
+-- FECHAR
 local closeBtn = Instance.new("TextButton")
-closeBtn.Size = UDim2.new(0, 30, 0, 30)
-closeBtn.Position = UDim2.new(1, -30, 0, 0)
+closeBtn.Size = UDim2.new(0,30,0,30)
+closeBtn.Position = UDim2.new(1,-30,0,0)
 closeBtn.Text = "X"
-closeBtn.BackgroundColor3 = Color3.fromRGB(120, 40, 40)
-closeBtn.TextColor3 = Color3.new(1,1,1)
-closeBtn.Font = Enum.Font.GothamBold
+closeBtn.BackgroundColor3 = Color3.fromRGB(180,50,50)
 closeBtn.Parent = frame
-aplicarCorner(closeBtn, 6)
+corner(closeBtn,8)
 
--- botão MORE DAMAGE
-local btnHand = Instance.new("TextButton")
-btnHand.Size = UDim2.new(0.8, 0, 0, 40)
-btnHand.Position = UDim2.new(0.1, 0, 0.3, 0)
-btnHand.Text = "MORE DAMAGE [OFF]"
-btnHand.BackgroundColor3 = Color3.fromRGB(255, 0, 0)
-btnHand.BackgroundTransparency = 0.3
-btnHand.TextColor3 = Color3.new(1,1,1)
-btnHand.Font = Enum.Font.GothamBold
-btnHand.Parent = frame
-aplicarCorner(btnHand, 8)
+-- BOTÃO +
+local openBtn = Instance.new("TextButton")
+openBtn.Size = UDim2.new(0,40,0,40)
+openBtn.Position = UDim2.new(0,10,0.3,0)
+openBtn.Text = "+"
+openBtn.TextScaled = true
+openBtn.BackgroundColor3 = Color3.fromRGB(80,80,80)
+openBtn.Visible = false
+openBtn.Parent = gui
+corner(openBtn,20)
 
--- botão MORE ARMOR
-local btnArmor = Instance.new("TextButton")
-btnArmor.Size = UDim2.new(0.8, 0, 0, 40)
-btnArmor.Position = UDim2.new(0.1, 0, 0.65, 0)
-btnArmor.Text = "MORE ARMOR [OFF]"
-btnArmor.BackgroundColor3 = Color3.fromRGB(0, 120, 255)
-btnArmor.BackgroundTransparency = 0.3
-btnArmor.TextColor3 = Color3.new(1,1,1)
-btnArmor.Font = Enum.Font.GothamBold
-btnArmor.Parent = frame
-aplicarCorner(btnArmor, 8)
+-- DRAG BOTÃO +
+local dragging2, start2, pos2
+openBtn.InputBegan:Connect(function(input)
+	if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+		dragging2 = true
+		start2 = input.Position
+		pos2 = openBtn.Position
+	end
+end)
 
--- estados
+UIS.InputChanged:Connect(function(input)
+	if dragging2 then
+		local delta = input.Position - start2
+		openBtn.Position = UDim2.new(
+			pos2.X.Scale,
+			pos2.X.Offset + delta.X,
+			pos2.Y.Scale,
+			pos2.Y.Offset + delta.Y
+		)
+	end
+end)
+
+UIS.InputEnded:Connect(function(input)
+	if dragging2 then dragging2 = false end
+end)
+
+-- ABAS
+local function criarAba(nome, y)
+	local tab = Instance.new("TextButton")
+	tab.Size = UDim2.new(0,90,0,30)
+	tab.Position = UDim2.new(1,5,0,y)
+	tab.Text = nome
+	tab.BackgroundColor3 = Color3.fromRGB(50,50,50)
+	tab.TextColor3 = Color3.new(1,1,1)
+	tab.Font = Enum.Font.GothamBold
+	tab.TextScaled = true
+	tab.Parent = frame
+	corner(tab,8)
+	return tab
+end
+
+local homeTab = criarAba("Home",40)
+local secTab = criarAba("Security",80)
+
+-- SCROLL
+local scroll = Instance.new("ScrollingFrame")
+scroll.Size = UDim2.new(1,-10,1,-60)
+scroll.Position = UDim2.new(0,5,0,55)
+scroll.BackgroundTransparency = 1
+scroll.AutomaticCanvasSize = Enum.AutomaticSize.Y
+scroll.ScrollBarThickness = 5
+scroll.Parent = frame
+
+local layout = Instance.new("UIListLayout", scroll)
+layout.Padding = UDim.new(0,6)
+
+-- LIMPAR
+local function limpar()
+	for _,v in pairs(scroll:GetChildren()) do
+		if v:IsA("GuiObject") then v:Destroy() end
+	end
+end
+
+-- ESTADOS (SALVOS)
 local handAtivo = false
 local armorAtivo = false
+local aiAtivo = false
+local tamanhoAI = 5
+local autoExit = false
 
--- 🔥 NOVA FUNÇÃO (usa Hand2)
+-- DAMAGE
 local function atualizarTool()
-    local model = workspace:FindFirstChild(player.Name)
-    if not model then return end
+	local model = workspace:FindFirstChild(player.Name)
+	if not model then return end
 
-    local hand2 = model:FindFirstChild("Hand2")
-    if not (hand2 and hand2:IsA("ObjectValue")) then return end
+	local hand2 = model:FindFirstChild("Hand2")
+	if not hand2 then return end
 
-    local toolRef = hand2.Value
-    if not toolRef then return end
+	local toolName
+	if hand2:IsA("ObjectValue") and hand2.Value then
+		toolName = hand2.Value.Name
+	elseif hand2:IsA("StringValue") then
+		toolName = hand2.Value
+	end
 
-    local toolName = toolRef.Name
+	if not toolName then return end
 
-    local tool =
-        player.Backpack:FindFirstChild(toolName) or
-        (player.Character and player.Character:FindFirstChild(toolName))
-
-    if tool then
-        tool:SetAttribute("ChargeTime", 0.01)
-    end
+	local tool = player.Backpack:FindFirstChild(toolName) or (player.Character and player.Character:FindFirstChild(toolName))
+	if tool then
+		tool:SetAttribute("ChargeTime", 0.01)
+	end
 end
 
--- função armor (igual antes)
+-- ARMOR
 local function setarArmor()
-    local model = workspace:FindFirstChild(player.Name)
-    if model then
-        local armor = model:FindFirstChild("ArmorPoints")
-        if armor and armor:IsA("NumberValue") then
-            armor.Value = 18
-        end
-    end
+	local model = workspace:FindFirstChild(player.Name)
+	if model then
+		local armor = model:FindFirstChild("ArmorPoints")
+		if armor then armor.Value = 18 end
+	end
 end
 
--- loop contínuo
+-- AI
+local function processarAI()
+	for _,obj in pairs(workspace:GetChildren()) do
+		if string.lower(obj.Name) == "ai" then
+			for _,p in pairs(obj:GetDescendants()) do
+				if p:IsA("BasePart") then
+					p.Size = Vector3.new(tamanhoAI,tamanhoAI,tamanhoAI)
+					p.Transparency = 0.8
+					p.CanCollide = false
+				end
+			end
+		end
+	end
+end
+
+-- BOTÃO
+local function btn(text, cor, altura)
+	local b = Instance.new("TextButton")
+	b.Size = UDim2.new(1,-10,0,altura or 30)
+	b.Text = text
+	b.TextScaled = true
+	b.BackgroundColor3 = cor
+	b.TextColor3 = Color3.new(1,1,1)
+	b.Font = Enum.Font.GothamBold
+	b.Parent = scroll
+	corner(b,10)
+	return b
+end
+
+-- HOME
+local function abrirHome()
+	limpar()
+
+	local b1 = btn("Damage "..(handAtivo and "[ON]" or "[OFF]"), Color3.fromRGB(200,60,60))
+	local b2 = btn("Armor "..(armorAtivo and "[ON]" or "[OFF]"), Color3.fromRGB(60,120,255))
+
+	b1.MouseButton1Click:Connect(function()
+		handAtivo = not handAtivo
+		b1.Text = "Damage "..(handAtivo and "[ON]" or "[OFF]")
+	end)
+
+	b2.MouseButton1Click:Connect(function()
+		armorAtivo = not armorAtivo
+		b2.Text = "Armor "..(armorAtivo and "[ON]" or "[OFF]")
+	end)
+
+	-- AUTO AI
+	local aiBtn = btn("AUTO AI "..(aiAtivo and "[ON]" or "[OFF]"), Color3.fromRGB(150,60,255), 40)
+
+	local config = Instance.new("Frame")
+	config.Size = UDim2.new(1,-10,0,70)
+	config.Visible = aiAtivo
+	config.BackgroundColor3 = Color3.fromRGB(30,30,30)
+	config.Parent = scroll
+	corner(config,10)
+
+	local label = Instance.new("TextLabel")
+	label.Size = UDim2.new(1,0,0,20)
+	label.Text = "Size: "..tamanhoAI
+	label.BackgroundTransparency = 1
+	label.TextColor3 = Color3.new(1,1,1)
+	label.Parent = config
+
+	local bar = Instance.new("Frame")
+	bar.Size = UDim2.new(0.9,0,0,10)
+	bar.Position = UDim2.new(0.05,0,0.6,0)
+	bar.BackgroundColor3 = Color3.fromRGB(80,80,80)
+	bar.Parent = config
+	corner(bar,5)
+
+	local fill = Instance.new("Frame")
+	fill.Size = UDim2.new(tamanhoAI/20,0,1,0)
+	fill.BackgroundColor3 = Color3.fromRGB(150,60,255)
+	fill.Parent = bar
+	corner(fill,5)
+
+	-- SLIDER FIXO
+	local function update(x)
+		local pct = math.clamp((x - bar.AbsolutePosition.X)/bar.AbsoluteSize.X,0,1)
+		fill.Size = UDim2.new(pct,0,1,0)
+		tamanhoAI = math.clamp(math.floor(pct*20),1,20)
+		label.Text = "Size: "..tamanhoAI
+	end
+
+	bar.InputBegan:Connect(function(input)
+		if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+			update(input.Position.X)
+
+			local move, release
+			move = UIS.InputChanged:Connect(function(i)
+				if i.UserInputType == Enum.UserInputType.MouseMovement or i.UserInputType == Enum.UserInputType.Touch then
+					update(i.Position.X)
+				end
+			end)
+
+			release = UIS.InputEnded:Connect(function(i)
+				if i.UserInputType == Enum.UserInputType.MouseButton1 or i.UserInputType == Enum.UserInputType.Touch then
+					move:Disconnect()
+					release:Disconnect()
+				end
+			end)
+		end
+	end)
+
+	aiBtn.MouseButton1Click:Connect(function()
+		aiAtivo = not aiAtivo
+		config.Visible = aiAtivo
+		aiBtn.Text = "AUTO AI "..(aiAtivo and "[ON]" or "[OFF]")
+	end)
+end
+
+-- SECURITY
+local function abrirSecurity()
+	limpar()
+
+	local b = btn("AUTO EXIT "..(autoExit and "[ON]" or "[OFF]"), Color3.fromRGB(255,200,0), 35)
+
+	b.MouseButton1Click:Connect(function()
+		autoExit = not autoExit
+		b.Text = "AUTO EXIT "..(autoExit and "[ON]" or "[OFF]")
+	end)
+end
+
+-- LOOP
 task.spawn(function()
-    while true do
-        task.wait(0.3)
-        if handAtivo then atualizarTool() end
-        if armorAtivo then setarArmor() end
-    end
+	while true do
+		task.wait(0.3)
+
+		if handAtivo then atualizarTool() end
+		if armorAtivo then setarArmor() end
+		if aiAtivo then processarAI() end
+
+		if autoExit and Players:FindFirstChild("KeqingBurst") then
+			player:Kick("Auto Exit")
+		end
+	end
 end)
 
--- toggles
-btnHand.MouseButton1Click:Connect(function()
-    handAtivo = not handAtivo
-    btnHand.Text = "MORE DAMAGE " .. (handAtivo and "[ON]" or "[OFF]")
-end)
+homeTab.MouseButton1Click:Connect(abrirHome)
+secTab.MouseButton1Click:Connect(abrirSecurity)
 
-btnArmor.MouseButton1Click:Connect(function()
-    armorAtivo = not armorAtivo
-    btnArmor.Text = "MORE ARMOR " .. (armorAtivo and "[ON]" or "[OFF]")
-end)
+abrirHome()
 
--- animações
-local function abrir()
-    frame.Visible = true
-    frame.Size = UDim2.new(0,0,0,0)
-    TweenService:Create(frame, TweenInfo.new(0.25), {
-        Size = UDim2.new(0,260,0,160)
-    }):Play()
-end
-
-local function fechar()
-    local t = TweenService:Create(frame, TweenInfo.new(0.25), {
-        Size = UDim2.new(0,0,0,0)
-    })
-    t:Play()
-    t.Completed:Wait()
-    frame.Visible = false
-end
-
--- controles
 closeBtn.MouseButton1Click:Connect(function()
-    fechar()
-    openBtn.Visible = true
+	frame.Visible = false
+	openBtn.Visible = true
 end)
 
 openBtn.MouseButton1Click:Connect(function()
-    abrir()
-    openBtn.Visible = false
-end)
-
--- recriar se apagar
-player.CharacterAdded:Connect(function()
-    task.wait(1)
-    if not player.PlayerGui:FindFirstChild("EpicPainel") then
-        local clone = script:Clone()
-        clone.Parent = player.PlayerGui
-    end
+	frame.Visible = true
+	openBtn.Visible = false
 end)
